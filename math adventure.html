@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Princess Mecana's Road & Math Adventure</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:linear-gradient(135deg,#20134d,#593d94 55%,#b66fc6);color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:16px}
+.app{width:min(1100px,100%);background:#171b38;border:2px solid #8b75ff;border-radius:24px;box-shadow:0 20px 60px #09091d99;overflow:hidden}
+header{padding:16px 22px;background:linear-gradient(90deg,#3b257b,#8b45a9);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}h1{font-size:clamp(20px,3vw,29px);margin:0}.tag{background:#ffffff24;padding:7px 12px;border-radius:99px;font-weight:700}
+main{padding:18px}.panel{background:#24294d;border:1px solid #535d98;border-radius:18px;padding:18px;margin-bottom:14px}.hidden{display:none!important}
+label{display:block;font-weight:700;margin:10px 0 5px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #929ed6;background:#111735;color:white;font-size:16px}button{border:0;border-radius:12px;padding:12px 17px;font-weight:800;font-size:16px;cursor:pointer;color:#24154d;background:linear-gradient(135deg,#ffe77c,#ffb6e7);box-shadow:0 3px 0 #c77dca}button:hover{filter:brightness(1.07);transform:translateY(-1px)}button.secondary{background:#a9b8ff;color:#1c2352}.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:150px}.note{color:#d4d9ff;font-size:13px}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.stat{background:#343a66;padding:8px 12px;border-radius:10px;font-weight:800}
+#gameCanvas{width:100%;display:block;border-radius:16px;background:#8be3f6;touch-action:none}.game-layout{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:14px}.side{display:flex;flex-direction:column;gap:12px}.side .panel{margin:0}.kingdoms{display:grid;grid-template-columns:1fr;gap:8px}.kingdoms button{width:100%;text-align:left}.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:190px;margin:auto}.controls button{padding:12px 4px}.controls button:nth-child(1){grid-column:2}.controls button:nth-child(2){grid-column:1;grid-row:2}.controls button:nth-child(3){grid-column:2;grid-row:2}.controls button:nth-child(4){grid-column:3;grid-row:2}.controls button:nth-child(5){grid-column:2;grid-row:3}
+#questionBox{position:fixed;inset:0;background:#090b20cc;display:flex;justify-content:center;align-items:center;padding:16px;z-index:10}.quiz{width:min(460px,100%);background:#292b55;border:2px solid #c1a3ff;border-radius:22px;padding:24px;box-shadow:0 18px 60px #0008}.quiz h2{margin-top:0;color:#ffe68c}.qtext{font-size:30px;font-weight:900;text-align:center;margin:22px 0}.answerrow{display:flex;gap:8px}.answerrow input{flex:1}.feedback{min-height:24px;margin-top:12px;font-weight:800}.footer{text-align:center;color:#bfc9ff;font-size:12px;padding:0 16px 16px}
+@media(max-width:800px){.game-layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.controls{max-width:180px}.panel{padding:12px}}
+
+#doorList button,#shopItems button,#friends button{min-height:54px;text-align:left;flex:1 1 180px}
+#doorList button.unlocked{background:linear-gradient(135deg,#a7ffbd,#83e8f2);color:#17334b}
+#specialBox .quiz{max-width:480px}
+</style></head>
+<body><div class="app">
+<header><h1>👑 Princess Mecana's Road & Math Adventure</h1><span class="tag">✨ Explore • Solve • Shine</span></header>
+<main>
+<section id="welcome" class="panel">
+<h2>Welcome, brave explorer! 🌟</h2><p>Set up your adventurer, or jump right in as a guest.</p>
+<div class="row"><div><label for="playerName">Your name</label><input id="playerName" placeholder="Explorer name" maxlength="20"></div><div><label for="gender">Choose your character</label><select id="gender"><option value="girl">Girl — Princess</option><option value="boy">Boy — Prince</option></select></div><div><label for="age">Age</label><input id="age" type="number" min="5" max="18" placeholder="e.g. 9"></div></div>
+<div class="row"><div><label for="grade">School class / year</label><input id="grade" placeholder="e.g. Class 4" maxlength="24"></div><div><label for="curriculum">Curriculum</label><select id="curriculum"><option>ICSE</option><option>CBSE</option><option>UK Curriculum</option><option>Other / General</option></select></div></div>
+<p class="note">Anyone can play! Sign Up saves a profile on this device, or Guest Mode plays without saving. Collect ⭐ stars as you travel. A maths checkpoint appears every 5 minutes.</p><div class="row"><button id="signup">✨ Sign Up & Start</button><button class="secondary" id="guest">🎮 Play as Guest</button></div>
+</section>
+<section id="game" class="hidden">
+<div class="stats"><div class="stat">👑 <span id="displayName">Princess Mecana</span></div><div class="stat">⭐ Stars: <span id="stars">0</span></div><div class="stat">✨ Collected: <span id="collected">0</span></div><div class="stat">🧩 Solved: <span id="solved">0</span></div><div class="stat">🚪 Gates: <span id="gates">0 / 8</span></div><div class="stat">⏱️ Time: <span id="time">20:00</span></div></div>
+<div class="game-layout"><div><canvas id="gameCanvas" width="900" height="520" aria-label="Adventure game canvas"></canvas><p class="note">Use arrow keys or buttons to travel the road and collect ⭐ stars. Every 5 minutes, answer a maths checkpoint to continue!</p></div><div class="side"><div class="panel"><h3>🗺️ Adventure Guide</h3><p id="guide">Meet friendly animals, visit the colourful village, and follow the sign to discover new kingdoms!</p><p>⏳ Next maths checkpoint: <span id="checkpoint">05:00</span></p></div><div class="panel"><h3>🗺️ Choose a Kingdom</h3><p class="note">Visit each magical land whenever you like!</p><div class="kingdoms"><button data-kingdom="candy">🍭 Candy Kingdom</button><button data-kingdom="fairy">🧚 Fairy Kingdom</button><button data-kingdom="dragon">🐉 Dragon Kingdom</button></div><p id="kingdomStatus" class="note">Current land: Meadow of Magical Numbers</p></div><div class="panel"><h3>🎮 Controls</h3><div class="controls"><button data-dir="up">⬆️</button><button data-dir="left">⬅️</button><button data-dir="down">⬇️</button><button data-dir="right">➡️</button></div><p class="note">Arrow keys also work on your keyboard.</p><button class="secondary" id="pauseBtn">⏸ Pause</button></div></div>
+<div class="panel" style="margin-top:14px"><h3>🧑‍🤝‍🧑 Meet the Kingdom Friends</h3><p class="note">Choose someone to say hello and hear a little adventure tip.</p><div class="row" id="friends"><button type="button" data-friend="Mira the Shopkeeper">🛍️ Mira the Shopkeeper</button><button type="button" data-friend="Willo the Wizard">🧙 Willo the Wizard</button><button type="button" data-friend="Pip the Fairy">🧚 Pip the Fairy</button><button type="button" data-friend="Bram the Dragon Keeper">🐉 Bram the Dragon Keeper</button></div><p id="friendNote" aria-live="polite" class="note">Your new friends are waiting to meet you!</p></div>
+<div class="panel"><h3>🚪 Picture Doors & New Adventures</h3><p class="note">Answer a maths question to unlock a door. Each door leads to a different magical place.</p><div class="row" id="doorList"><button type="button" data-door="candy">🍭 Candy Palace Door</button><button type="button" data-door="fairy">🧚 Fairy Garden Door</button><button type="button" data-door="dragon">🐉 Dragon Cave Door</button><button type="button" data-door="treasure">💎 Treasure Hall Door</button></div><p id="doorNote" aria-live="polite" class="note">Doors you unlock will be marked here.</p></div>
+<div class="panel"><h3>🛍️ Royal Marketplace</h3><p class="note">Spend your collected stars on magical things. Shopping is optional. You must have enough stars and solve a little shopping maths question to buy an item.</p><div class="row" id="shopItems"><button type="button" data-item="Royal Crown" data-price="20">👑 Royal Crown — 20 ⭐</button><button type="button" data-item="Magic Wand" data-price="15">🪄 Magic Wand — 15 ⭐</button><button type="button" data-item="Fairy Wings" data-price="30">🦋 Fairy Wings — 30 ⭐</button><button type="button" data-item="Magic Horse" data-price="50">🐴 Magic Horse — 50 ⭐</button><button type="button" data-item="Castle Decoration" data-price="40">🏰 Castle Decoration — 40 ⭐</button><button type="button" data-item="Baby Dragon" data-price="100">🐉 Baby Dragon — 100 ⭐</button></div><p id="shopNote" aria-live="polite" class="note">Your shopping bag is empty.</p></div>
+</section>
+</main>
+<div id="specialBox" class="hidden" style="position:fixed;inset:0;background:#090b20dd;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px"><div class="quiz"><h2 id="specialTitle">✨ A Magical Challenge!</h2><p id="specialPrompt"></p><div class="qtext" id="specialQuestion"></div><div class="answerrow"><input id="specialAnswer" inputmode="numeric" placeholder="Your answer"><button id="specialSubmit" type="button">Check</button></div><p id="specialFeedback" class="feedback" aria-live="polite"></p><button id="specialClose" class="hidden" type="button">Continue ➜</button></div></div><div class="footer">A magical road adventure for everyone • Share this HTML file so other children can play • Sign-up profiles are saved only on this device</div></div>
+<div id="questionBox" class="hidden"><div class="quiz"><h2>✨ Math Gate Challenge!</h2><p id="topic" class="note"></p><div id="qtext" class="qtext"></div><div class="answerrow"><input id="answer" inputmode="decimal" placeholder="Your answer"><button id="submitAnswer">Answer</button></div><div id="feedback" class="feedback"></div><button id="continue" class="hidden" style="margin-top:10px">Continue Adventure ➜</button></div></div>
+<script>const canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height;
+let kingdom='meadow',active=false,paused=false,player={x:120,y:360},stars=0,collected=0,solved=0,gateCount=0,gate={x:740,y:310},timeLeft=1200,timerId=null,quiz=null,elapsed=0,nextCheckpoint=300,collectibles=[],treasureChests=[];
+const nameEl=document.getElementById('playerName'),genderEl=document.getElementById('gender'),ageEl=document.getElementById('age'),gradeEl=document.getElementById('grade'),currEl=document.getElementById('curriculum');
+function r(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function makeStars(){collectibles=[];for(let i=0;i<14;i++)collectibles.push({x:r(65,840),y:r(265,485),taken:false,twinkle:Math.random()*6});treasureChests=[{x:125,y:300,opened:false},{x:440,y:455,opened:false},{x:790,y:250,opened:false}];}
+function startGame(save){
+ let nm=nameEl.value.trim()||'Explorer';
+ if(save){localStorage.setItem('mecanaProfile',JSON.stringify({name:nm,gender:genderEl.value,age:ageEl.value,grade:gradeEl.value,curriculum:currEl.value}));}
+ else {let p=localStorage.getItem('mecanaProfile');if(p&&!nameEl.value){try{nm=JSON.parse(p).name||nm;}catch{}}}
+ const title=genderEl.value==='boy'?'Prince':'Princess';
+ document.getElementById('displayName').textContent=title+' '+nm;
+ document.querySelector('header h1').textContent='👑 '+title+' '+nm+'’s Road & Math Adventure';
+ document.getElementById('welcome').classList.add('hidden');document.getElementById('game').classList.remove('hidden');active=true;makeStars();draw();updateStats();
+ timerId=setInterval(()=>{if(active&&!paused){timeLeft--;elapsed++;if(elapsed>=nextCheckpoint&&!quiz){nextCheckpoint+=300;openQuiz(true);}updateStats();if(timeLeft<=0)endGame('Time is up! Your adventure time is over.');}},1000);
+}
+document.getElementById('signup').onclick=()=>startGame(true);document.getElementById('guest').onclick=()=>startGame(false);
+function updateStats(){document.getElementById('stars').textContent=stars;document.getElementById('collected').textContent=collected;document.getElementById('solved').textContent=solved;document.getElementById('gates').textContent=gateCount+' / 8';document.getElementById('time').textContent=Math.floor(timeLeft/60)+':'+String(timeLeft%60).padStart(2,'0');let left=Math.max(0,nextCheckpoint-elapsed);document.getElementById('checkpoint').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');}
+function move(dx,dy){if(!active||paused||quiz)return;player.x=Math.max(35,Math.min(W-35,player.x+dx));player.y=Math.max(120,Math.min(H-35,player.y+dy));collectNearby();draw();}
+window.addEventListener('keydown',e=>{const m={ArrowLeft:[-24,0],ArrowRight:[24,0],ArrowUp:[0,-24],ArrowDown:[0,24]};if(m[e.key]){e.preventDefault();move(...m[e.key]);}});
+document.querySelectorAll('[data-dir]').forEach(b=>b.onclick=()=>{let m={up:[0,-26],down:[0,26],left:[-26,0],right:[26,0]};move(...m[b.dataset.dir]);});
+function ellipse(x,y,rx,ry,color){ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();}
+function draw(){if(!active)return;ctx.clearRect(0,0,W,H);
+ let palettes={meadow:['#7be0ff','#c6f5ff','#8edb91'],candy:['#ff9bd5','#ffe0f2','#b7f28b'],fairy:['#7865d9','#d9c8ff','#79d9b1'],dragon:['#ff9b65','#ffd19a','#8aaf65']};let pal=palettes[kingdom]||palettes.meadow;let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,pal[0]);sky.addColorStop(.7,pal[1]);sky.addColorStop(1,pal[2]);ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ ellipse(770,75,45,45,'#fff3a4');for(let i=0;i<4;i++){ellipse(110+i*24,90,32,18,'#ffffffcc');ellipse(150+i*24,80,36,20,'#ffffffcc');}
+ ctx.fillStyle='#8bd3a6';ctx.beginPath();ctx.moveTo(0,220);ctx.bezierCurveTo(170,110,280,250,430,170);ctx.bezierCurveTo(580,95,720,240,900,140);ctx.lineTo(900,520);ctx.lineTo(0,520);ctx.closePath();ctx.fill();
+ ctx.fillStyle='#6ac779';ctx.fillRect(0,245,W,H-245);for(let i=0;i<38;i++){let x=(i*137+43)%W,y=270+(i*71)%230;ellipse(x,y,3,3,i%2?'#fff4a3':'#ffbde9');}
+ ctx.strokeStyle='#c79b66';ctx.lineWidth=140;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-50,420);ctx.bezierCurveTo(180,400,220,290,390,340);ctx.bezierCurveTo(540,400,600,440,770,330);ctx.bezierCurveTo(850,280,930,350,970,320);ctx.stroke();ctx.strokeStyle='#f3d5a1';ctx.lineWidth=5;ctx.setLineDash([24,24]);ctx.beginPath();ctx.moveTo(-50,420);ctx.bezierCurveTo(180,400,220,290,390,340);ctx.bezierCurveTo(540,400,600,440,770,330);ctx.bezierCurveTo(850,280,930,350,970,320);ctx.stroke();ctx.setLineDash([]);
+ for(let i=0;i<9;i++){let x=40+i*105,y=250+(i%3)*35;ctx.fillStyle='#8b5c37';ctx.fillRect(x-8,y,16,45);ellipse(x,y-5,34,35,'#2e9b63');ellipse(x-18,y-18,23,24,'#47b879');ellipse(x+17,y-20,22,24,'#5bc889');}
+ // Enchanted castle, towers and flags
+ ctx.fillStyle='#8b78c9';ctx.fillRect(335,105,230,105);ctx.fillStyle='#b9a8ed';ctx.fillRect(365,82,48,128);ctx.fillRect(485,82,48,128);ctx.fillStyle='#f3d7ff';ctx.fillRect(350,92,20,118);ctx.fillRect(530,92,20,118);
+ for(const tx of [389,509]){ctx.fillStyle='#6e5aa9';ctx.beginPath();ctx.moveTo(tx-28,84);ctx.lineTo(tx,42);ctx.lineTo(tx+28,84);ctx.closePath();ctx.fill();ctx.fillStyle='#ffe58a';ctx.fillRect(tx-3,35,6,22);ctx.fillStyle='#ff8fc8';ctx.beginPath();ctx.moveTo(tx+3,38);ctx.lineTo(tx+34,47);ctx.lineTo(tx+3,56);ctx.closePath();ctx.fill();}
+ ctx.fillStyle='#5d478e';ctx.fillRect(425,150,50,60);ctx.beginPath();ctx.arc(450,150,25,Math.PI,0);ctx.fill();ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(450,177,4,0,Math.PI*2);ctx.fill();
+ // Friendly village: colourful cottages and a little market near the castle
+ const houses=[{x:65,y:170,c:'#ffb36b'},{x:710,y:175,c:'#ff9ecb'},{x:795,y:205,c:'#ffe28a'}];
+ houses.forEach(h=>{ctx.fillStyle='#f8e7c5';ctx.fillRect(h.x,h.y,76,54);ctx.fillStyle=h.c;ctx.beginPath();ctx.moveTo(h.x-9,h.y+4);ctx.lineTo(h.x+38,h.y-34);ctx.lineTo(h.x+85,h.y+4);ctx.closePath();ctx.fill();ctx.fillStyle='#80528c';ctx.fillRect(h.x+29,h.y+25,18,29);ctx.fillStyle='#9ee8ff';ctx.fillRect(h.x+8,h.y+17,15,15);ctx.fillRect(h.x+53,h.y+17,15,15);});
+ // A little sign points explorers towards the next kingdom
+ ctx.fillStyle='#8b5a35';ctx.fillRect(620,205,9,62);ctx.fillStyle='#ffe08a';ctx.fillRect(590,200,70,27);ctx.fillStyle='#54336e';ctx.font='bold 12px Arial';ctx.textAlign='center';ctx.fillText('NEXT KINGDOM',625,218);
+ // Friendly animated animal neighbours
+ const hop=Math.sin(Date.now()/220)*5, flutter=Math.sin(Date.now()/110)*4;
+ ctx.font='30px Arial';ctx.textAlign='center';ctx.fillText('🐰',235,260+hop);ctx.fillText('🦊',650,275-hop);ctx.fillText('🐦',300,145+flutter);ctx.fillText('🐑',835,465+hop*.35);
+ // Treasure chests around the meadow
+ treasureChests.forEach(ch=>{if(ch.opened)return;ctx.save();ctx.translate(ch.x,ch.y);ctx.fillStyle='#8b4c22';ctx.fillRect(-17,-5,34,22);ctx.fillStyle='#d99035';ctx.fillRect(-17,-13,34,12);ctx.strokeStyle='#ffe27a';ctx.lineWidth=4;ctx.strokeRect(-17,-13,34,30);ctx.fillStyle='#fff1a1';ctx.fillRect(-3,-2,6,9);ctx.restore();});
+ collectibles.forEach(st=>{if(st.taken)return;ctx.save();ctx.translate(st.x,st.y);ctx.rotate(Date.now()/1200+st.twinkle);ctx.fillStyle='#fff36c';ctx.shadowColor='#fff5a0';ctx.shadowBlur=18;ctx.beginPath();for(let k=0;k<10;k++){let rr=k%2?9:18,ang=-Math.PI/2+k*Math.PI/5;ctx.lineTo(Math.cos(ang)*rr,Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});
+ let pulse=8+Math.sin(Date.now()/180)*5;ctx.save();ctx.shadowColor='#a9fff6';ctx.shadowBlur=25;ctx.strokeStyle='#5bfff0';ctx.lineWidth=10;ctx.beginPath();ctx.arc(gate.x,gate.y,42+pulse,Math.PI,Math.PI*2);ctx.stroke();ctx.shadowBlur=0;ctx.strokeStyle='#f7f2ff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(gate.x,gate.y,42+pulse,Math.PI,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff6a8';ctx.font='bold 26px Arial';ctx.textAlign='center';ctx.fillText('⭐',gate.x,gate.y-22);ctx.restore();
+ let px=player.x,py=player.y+Math.sin(Date.now()/120)*2;ellipse(px,py+27,24,8,'#38845555');ctx.fillStyle='#f5c89e';ctx.beginPath();ctx.arc(px,py-10,18,0,Math.PI*2);ctx.fill();ctx.fillStyle='#563421';ctx.beginPath();ctx.arc(px,py-13,18,Math.PI,Math.PI*2);ctx.fill();ellipse(px-5,py-9,2,3,'#34233b');ellipse(px+5,py-9,2,3,'#34233b');ctx.strokeStyle='#b35c68';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px,py-4,5,0,Math.PI);ctx.stroke();ctx.fillStyle=genderEl.value==='boy'?'#58a9f7':'#ed75bb';ctx.beginPath();ctx.moveTo(px-18,py+4);ctx.lineTo(px+18,py+4);ctx.lineTo(px+28,py+27);ctx.lineTo(px-28,py+27);ctx.closePath();ctx.fill();ctx.fillStyle='#5b3a75';ellipse(px-10,py+27+Math.sin(Date.now()/100)*2,7,4,'#5b3a75');ellipse(px+10,py+27-Math.sin(Date.now()/100)*2,7,4,'#5b3a75');ctx.fillStyle='#ffd85c';ctx.beginPath();ctx.moveTo(px-12,py-29);ctx.lineTo(px-6,py-44);ctx.lineTo(px+2,py-31);ctx.lineTo(px+9,py-45);ctx.lineTo(px+14,py-29);ctx.closePath();ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 14px Arial';ctx.textAlign='left';ctx.fillText((genderEl.value==='boy'?'Prince ':'Princess ')+(nameEl.value.trim()||'Explorer'),px+28,py-22);
+ ctx.fillStyle='#26325c';ctx.globalAlpha=.8;ctx.fillRect(18,18,245,40);ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.font='bold 17px Arial';ctx.fillText(({meadow:'Meadow of Magical Numbers',candy:'Candy Kingdom 🍭',fairy:'Fairy Kingdom 🧚',dragon:'Dragon Kingdom 🐉'})[kingdom],30,44);if(kingdom==='candy'){ctx.font='38px Arial';['🍭','🍬','🍩','🍦'].forEach((v,i)=>ctx.fillText(v,90+i*210,150+(i%2)*38));}else if(kingdom==='fairy'){ctx.font='34px Arial';['🧚','🦋','🌸','✨'].forEach((v,i)=>ctx.fillText(v,95+i*210,150+(i%2)*35));}else if(kingdom==='dragon'){ctx.font='38px Arial';['🐉','🌋','💎','🔥'].forEach((v,i)=>ctx.fillText(v,95+i*210,150+(i%2)*38));}if(!paused){requestAnimationFrame(draw);}}
+function pickMath(){let age=parseInt(ageEl.value)||9,grade=gradeEl.value.toLowerCase(),difficulty=age>=13?3:age>=10?2:1;if(/class 5|year 6|class 6|year 7/i.test(grade))difficulty=Math.max(difficulty,2);if(/class 8|class 9|year 9|year 10/i.test(grade))difficulty=3;let qs=[];
+ if(difficulty===1){qs=[()=>{let a=r(2,20),b=r(2,20);return {t:'Addition',q:`${a} + ${b} = ?`,ans:a+b}},()=>{let a=r(8,30),b=r(2,a);return {t:'Subtraction',q:`${a} − ${b} = ?`,ans:a-b}},()=>{let a=r(2,10),b=r(2,10);return {t:'Multiplication',q:`${a} × ${b} = ?`,ans:a*b}},()=>{let a=r(2,10),b=r(2,10);return {t:'Division',q:`${a*b} ÷ ${a} = ?`,ans:b}}];}
+ else if(difficulty===2){qs=[()=>{let a=r(2,12),b=r(2,12);return {t:'Fraction Addition',q:`${a}/12 + ${b}/12 = ? (simplify if you can)`,ans:(a+b)/12,alt:`${a+b}/12`}},()=>{let a=r(12,30),b=r(2,9);return {t:'Multiplication',q:`${a} × ${b} = ?`,ans:a*b}},()=>{let a=r(2,12),b=r(2,12);return {t:'Division',q:`${a*b} ÷ ${b} = ?`,ans:a}},()=>{let a=r(15,60),b=r(5,14);return {t:'Addition',q:`${a} + ${b} = ?`,ans:a+b}}];}
+ else{qs=[()=>{let a=r(2,9),b=r(2,9);return {t:'Fraction Addition',q:`${a}/12 + ${b}/12 = ? (write as a fraction)`,ans:(a+b)/12,alt:`${a+b}/12`}},()=>{let a=r(10,40),b=r(2,15);return {t:'Percent',q:`What is ${b}% of ${a*10}?`,ans:a*b}},()=>{let a=r(4,15),b=r(3,12);return {t:'Algebra',q:`If x + ${a} = ${a+b}, what is x?`,ans:b}},()=>{let a=r(4,15),b=r(3,15);return {t:'Multiplication',q:`${a} × ${b} = ?`,ans:a*b}}];}return qs[Math.floor(Math.random()*qs.length)]();}
+function openQuiz(checkpoint=false){if(quiz)return;quiz=pickMath();document.getElementById('topic').textContent=checkpoint?'⏱️ Five-minute maths checkpoint • '+quiz.t:quiz.t;document.getElementById('qtext').textContent=quiz.q;document.getElementById('answer').value='';document.getElementById('feedback').textContent='';document.getElementById('continue').classList.add('hidden');document.getElementById('submitAnswer').classList.remove('hidden');document.getElementById('questionBox').classList.remove('hidden');document.getElementById('answer').focus();}
+document.getElementById('submitAnswer').onclick=checkAnswer;document.getElementById('answer').addEventListener('keydown',e=>{if(e.key==='Enter')checkAnswer();});
+function checkAnswer(){let val=document.getElementById('answer').value.trim();if(!val)return;let correct=Number(val)===Number(quiz.ans)||val.replace(/\s/g,'')===quiz.alt;if(correct){stars+=2;solved++;gateCount++;document.getElementById('feedback').textContent='🎉 Correct! You earned 2 bonus stars. Keep adventuring!';document.getElementById('feedback').style.color='#a7ffbd';document.getElementById('submitAnswer').classList.add('hidden');document.getElementById('continue').classList.remove('hidden');}else{document.getElementById('feedback').textContent='Almost! Try again. Hint: think carefully and check your calculation.';document.getElementById('feedback').style.color='#ffcf9b';}}
+document.getElementById('continue').onclick=()=>{document.getElementById('questionBox').classList.add('hidden');quiz=null;document.getElementById('guide').textContent='Great answer! Keep traveling and collecting ⭐ stars. Your next maths checkpoint is in 5 minutes.';updateStats();draw();};
+function collectNearby(){for(const ch of treasureChests){if(!ch.opened&&Math.hypot(player.x-ch.x,player.y-ch.y)<42){ch.opened=true;stars+=5;document.getElementById('guide').textContent='🎁 Treasure chest opened! You found 5 bonus stars!';updateStats();}}for(const st of collectibles){if(!st.taken&&Math.hypot(player.x-st.x,player.y-st.y)<34){st.taken=true;collected++;stars++;document.getElementById('guide').textContent='✨ Star collected! Nice exploring!';updateStats();}}if(collectibles.every(st=>st.taken)){makeStars();document.getElementById('guide').textContent='🌟 You collected every star in this meadow! Fresh stars have appeared!';}}
+document.querySelectorAll('[data-kingdom]').forEach(btn=>btn.addEventListener('click',()=>{if(!active||paused||quiz)return;kingdom=btn.dataset.kingdom;player={x:120,y:360};makeStars();const labels={candy:'🍭 Candy Kingdom: explore sweet roads, collect candy stars and discover sugary surprises!',fairy:'🧚 Fairy Kingdom: wander through enchanted flowers, meet butterflies and find sparkle treasures!',dragon:'🐉 Dragon Kingdom: explore the volcanic valley, find gems and meet friendly dragons!'};document.getElementById('kingdomStatus').textContent='Current land: '+btn.textContent;document.getElementById('guide').textContent=labels[kingdom];draw();}));
+document.getElementById('pauseBtn').onclick=()=>{paused=!paused;document.getElementById('pauseBtn').textContent=paused?'▶ Resume':'⏸ Pause';document.getElementById('guide').textContent=paused?'Game paused. Take a breather!':'Explore the meadow, collect ⭐ stars, and watch for the five-minute checkpoint!';if(!paused)draw();};
+function endGame(msg){active=false;clearInterval(timerId);document.getElementById('questionBox').classList.remove('hidden');document.querySelector('.quiz').innerHTML=`<h2>🏆 Adventure Complete!</h2><p>${msg}</p><p>Stars earned: <b>${stars}</b></p><p>Math questions solved: <b>${solved}</b></p><button onclick="location.reload()">Play Again</button>`;}
+
+// Kingdom friends, picture doors, and maths-powered optional marketplace
+const specialBox=document.getElementById('specialBox');
+let specialAction=null, unlockedDoors=new Set(), ownedItems=[];
+const friendMessages={
+ 'Mira the Shopkeeper':'Welcome to my marketplace! Collect stars on your travels, then solve a shopping sum to buy something special.',
+ 'Willo the Wizard':'A clever explorer looks carefully at every maths question. Try the picture doors to discover new lands!',
+ 'Pip the Fairy':'Follow the sparkling stars. You can visit the kingdoms in any order, and shopping is always optional!',
+ 'Bram the Dragon Keeper':'Roar-some work! Find treasure chests for bonus stars and save up for a friendly baby dragon.'
+};
+document.querySelectorAll('[data-friend]').forEach(b=>b.addEventListener('click',()=>{
+ const n=b.dataset.friend; document.getElementById('friendNote').textContent='💬 '+n+': “'+friendMessages[n]+'”';
+ document.getElementById('guide').textContent=n+' says hello! Keep exploring and collecting stars.';
+}));
+function challenge(title,prompt,question,answer,onSuccess){
+ specialAction={answer:String(answer),onSuccess};
+ document.getElementById('specialTitle').textContent=title;
+ document.getElementById('specialPrompt').textContent=prompt;
+ document.getElementById('specialQuestion').textContent=question;
+ document.getElementById('specialAnswer').value='';
+ document.getElementById('specialFeedback').textContent='';
+ document.getElementById('specialSubmit').classList.remove('hidden');
+ document.getElementById('specialClose').classList.add('hidden');
+ specialBox.classList.remove('hidden');
+ document.getElementById('specialAnswer').focus();
+}
+function closeChallenge(){specialBox.classList.add('hidden');specialAction=null;draw();updateStats();}
+document.getElementById('specialSubmit').addEventListener('click',()=>{
+ if(!specialAction)return;
+ const value=document.getElementById('specialAnswer').value.trim();
+ if(!value)return;
+ if(value.replace(/\s/g,'')===specialAction.answer){
+  document.getElementById('specialFeedback').textContent='🎉 Correct! Wonderful work!';
+  document.getElementById('specialFeedback').style.color='#a7ffbd';
+  document.getElementById('specialSubmit').classList.add('hidden');
+  document.getElementById('specialClose').classList.remove('hidden');
+  specialAction.onSuccess();
+ }else{
+  document.getElementById('specialFeedback').textContent='Good try! Have another go.';
+  document.getElementById('specialFeedback').style.color='#ffcf9b';
+ }
+});
+document.getElementById('specialAnswer').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('specialSubmit').click();});
+document.getElementById('specialClose').addEventListener('click',closeChallenge);
+document.querySelectorAll('[data-door]').forEach(b=>b.addEventListener('click',()=>{
+ if(!active||paused||quiz||!specialBox.classList.contains('hidden'))return;
+ const id=b.dataset.door;
+ if(unlockedDoors.has(id)){document.getElementById('doorNote').textContent='✅ '+b.textContent+' is already open. Enjoy exploring!';return;}
+ const a=r(4,18),c=r(3,12),answer=a+c;
+ const destination={candy:'🍭 Sweet Candy Palace',fairy:'🧚 Enchanted Fairy Garden',dragon:'🐉 Friendly Dragon Cave',treasure:'💎 Secret Treasure Hall'}[id];
+ challenge('🚪 Unlock the Picture Door', 'Solve this sum to open '+destination+'.',a+' + '+c+' = ?',answer,()=>{
+  unlockedDoors.add(id);b.classList.add('unlocked');b.textContent='🔓 '+b.textContent;
+  stars+=5;gateCount++;document.getElementById('doorNote').textContent='🌟 '+destination+' is unlocked! You earned 5 bonus stars.';
+  document.getElementById('guide').textContent='You opened '+destination+'! A new picture door is ready for your next adventure.';
+ });
+}));
+document.querySelectorAll('[data-item]').forEach(b=>b.addEventListener('click',()=>{
+ if(!active||paused||quiz||!specialBox.classList.contains('hidden'))return;
+ const item=b.dataset.item,price=Number(b.dataset.price);
+ if(ownedItems.includes(item)){document.getElementById('shopNote').textContent='🎒 You already own the '+item+'!';return;}
+ if(stars<price){document.getElementById('shopNote').textContent='⭐ You need '+(price-stars)+' more stars to buy the '+item+'. Keep exploring!';return;}
+ const x=r(3,12),y=r(2,9),answer=x+y;
+ challenge('🛍️ Shopping Maths', 'Mira says: “The '+item+' costs '+price+' stars. Solve this little sum to confirm your purchase!”',x+' + '+y+' = ?',answer,()=>{
+  if(stars>=price){stars-=price;ownedItems.push(item);document.getElementById('shopNote').textContent='🎉 Purchased '+item+'! Your bag: '+ownedItems.join(', ')+'.';}
+  else document.getElementById('shopNote').textContent='You do not have enough stars now. Keep collecting!';
+ });
+}));
+</script></body></html>
